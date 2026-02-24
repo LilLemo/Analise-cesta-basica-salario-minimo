@@ -1,0 +1,389 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+.container {
+    width: 100%;
+    min-width: 1100px;
+    max-width: 1400px;
+    background-color: #16213e;
+    border: 3px solid #0f3460;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(227, 20, 102, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+h1, h2, h3 {
+    font-family: 'Press Start 2P', cursive;
+    color: #e94560;
+    text-shadow: 2px 2px #000;
+}
+
+button {
+    font-family: 'Press Start 2P', cursive;
+    background-color: #e94560;
+    color: #fff;
+    border: 2px solid #fff;
+    padding: 15px 30px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s ease-in-out;
+}
+button:hover:not(:disabled) {
+    background-color: #fff;
+    color: #e94560;
+}
+button:disabled {
+    background-color: #555;
+    border-color: #888;
+    cursor: not-allowed;
+}
+
+.tela {
+    display: none;
+}
+.tela.ativa {
+    display: block;
+}
+#boas-vindas.ativa {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+#tela-embate.ativa {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 600px;
+    gap: 50px;
+}
+
+.versus-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+#placeholder-dadinho { width: 150px; height: 150px; background-color: #533483; border: 3px dashed #e94560; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 12px; }
+.balao-fala { background-color: #0f3460; border: 2px solid #e94560; border-radius: 10px; padding: 20px; max-width: 600px; position: relative; }
+
+#selecao h2 { font-size: 24px; }
+.arena-selecao { display: flex; justify-content: space-around; align-items: center; margin: 15px 0; }
+
+
+.player-box {
+    width: 250px;
+    height: 300px;
+    border: 3px solid #e94560;
+    background-color: #0f3460;
+    display: flex;
+    flex-direction: column; 
+    justify-content: flex-end; 
+    align-items: center;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    padding-bottom: 20px; 
+    position: relative;
+    overflow: hidden;
+    color: white;
+    box-sizing: border-box; 
+}
+.player-box-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0; 
+    transition: opacity 0.3s ease-in-out;
+}
+.player-box-img.visivel {
+    opacity: 0.9;
+}
+.player-box-text {
+    position: relative; 
+    z-index: 2;
+    text-shadow: 2px 2px 4px #000;
+}
+.grid-personagens {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px; 
+    margin-top: 20px;
+    padding: 10px; 
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 5px;
+    justify-content: center;
+}
+.retrato-presidente {
+    width: 140px;
+    height: 180px;
+    background-color: #1a1a2e;
+    border: 3px dashed rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    transition: all 0.2s;
+    overflow: hidden;
+}
+.retrato-presidente img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+.retrato-presidente span {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 9px;
+    padding: 10px 5px;
+    line-height: 1.2;
+    color: #fff;
+}
+.retrato-presidente.selecionado { 
+    border-style: solid;
+}
+/* Estilos da Tela de Resultados */
+.arena-resultados { min-height: 90vh; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px; }
+.coluna-resultado {  width: 100%; max-width: 500px; padding: 15px; border-radius: 8px; border: 2px solid #0f3460; transition: all 0.5s ease; opacity: 0; }
+.coluna-resultado h3 { color: #FFFFFF; }
+.placeholder-grafico-linha { width: 100%; height: 280px; background-color: #1a1a2e; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; }
+.placeholder-grafico-linha img { max-width: 100%; max-height: 100%; }
+.placeholder-grafico-pizza { width: 100%; height: 180px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; opacity: 0; }
+.kpi-box { display: flex; justify-content: space-around; gap: 10px; }
+.kpi { background-color: #1a1a2e; border: 1px solid #e94560; padding: 10px; width: 48%; border-radius: 5px; }
+.kpi-full { background-color: #1a1a2e; border: 1px solid #e94560; padding: 10px; width: 100%; border-radius: 5px; }
+.lutador { width: 350px; height: 350px; }
+.lutador img { width: 100%; height: 100%; object-fit: cover; border: 5px solid #e94560; box-shadow: 0 0 25px rgba(233, 69, 96, 0.8); }
+.vs-text h2 { font-size: 80px; color: #fff; text-shadow: 4px 4px #000; }
+@keyframes slideInFromLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+#tela-embate.ativa .lutador#lutador-a { animation: slideInFromLeft 1s ease-out forwards; }
+#tela-embate.ativa .lutador#lutador-b { animation: slideInFromRight 1s ease-out forwards; }
+.loading-container { width: 70%; height: 30px; background-color: #1a1a2e; border: 3px solid #fff; border-radius: 5px; overflow: hidden; }
+.loading-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #e94560, #f0ff78); border-radius: 2px; transition: width 0.5s ease-in-out; }
+:root { --cor-fhc: #eff31a; --cor-lula: #f61e06; --cor-dilma: #c21ca4; --cor-temer: #176ddf; --cor-bolsonaro: #39dd3f; }
+.retrato-presidente:hover {
+    animation: wiggle 1s ease-in-out infinite;
+    transform: scale(1.1); 
+    z-index: 10; 
+}
+.retrato-presidente[data-theme="fhc"]:hover { border-color: var(--cor-fhc); box-shadow: 0 0 15px var(--cor-fhc); }
+.retrato-presidente[data-theme="lula"]:hover { border-color: var(--cor-lula); box-shadow: 0 0 15px var(--cor-lula); }
+.retrato-presidente[data-theme="dilma"]:hover { border-color: var(--cor-dilma); box-shadow: 0 0 15px var(--cor-dilma); }
+.retrato-presidente[data-theme="temer"]:hover { border-color: var(--cor-temer); box-shadow: 0 0 15px var(--cor-temer); }
+.retrato-presidente[data-theme="bolsonaro"]:hover { border-color: var(--cor-bolsonaro); box-shadow: 0 0 15px var(--cor-bolsonaro); }
+.retrato-presidente.selecionado {
+    border-style: solid; 
+    animation: pop-select 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform: scale(1.1); 
+    z-index: 5; 
+}
+.retrato-presidente[data-theme="fhc"].selecionado { border-color: var(--cor-fhc); box-shadow: 0 0 15px var(--cor-fhc); }
+.retrato-presidente[data-theme="lula"].selecionado { border-color: var(--cor-lula); box-shadow: 0 0 15px var(--cor-lula); }
+.retrato-presidente[data-theme="dilma"].selecionado { border-color: var(--cor-dilma); box-shadow: 0 0 15px var(--cor-dilma); }
+.retrato-presidente[data-theme="temer"].selecionado { border-color: var(--cor-temer); box-shadow: 0 0 15px var(--cor-temer); }
+.retrato-presidente[data-theme="bolsonaro"].selecionado { border-color: var(--cor-bolsonaro); box-shadow: 0 0 15px var(--cor-bolsonaro); }
+.lutador[data-theme="fhc"] img { border-color: var(--cor-fhc); box-shadow: 0 0 25px var(--cor-fhc); }
+.lutador[data-theme="lula"] img { border-color: var(--cor-lula); box-shadow: 0 0 25px var(--cor-lula); }
+.lutador[data-theme="dilma"] img { border-color: var(--cor-dilma); box-shadow: 0 0 25px var(--cor-dilma); }
+.lutador[data-theme="temer"] img { border-color: var(--cor-temer); box-shadow: 0 0 25px var(--cor-temer); }
+.lutador[data-theme="bolsonaro"] img { border-color: var(--cor-bolsonaro); box-shadow: 0 0 25px var(--cor-bolsonaro); }
+.coluna-resultado[data-theme="fhc"] { border-color: var(--cor-fhc); background: linear-gradient(90deg, rgba(239, 243, 26, 0.4) 0%, #16213e 85%); }
+.coluna-resultado[data-theme="lula"] { border-color: var(--cor-lula); background: linear-gradient(90deg, rgba(246, 30, 6, 0.4) 0%, #16213e 85%); }
+.coluna-resultado[data-theme="dilma"] { border-color: var(--cor-dilma); background: linear-gradient(90deg, rgba(194, 28, 164, 0.4) 0%, #16213e 85%); }
+.coluna-resultado[data-theme="temer"] { border-color: var(--cor-temer); background: linear-gradient(90deg, rgba(23, 109, 223, 0.4) 0%, #16213e 85%); }
+.coluna-resultado[data-theme="bolsonaro"] { border-color: var(--cor-bolsonaro); background: linear-gradient(90deg, rgba(57, 221, 63, 0.4) 0%, #16213e 85%); }
+@keyframes slideAndFadeInFromLeft { from { transform: translateX(-50%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideAndFadeInFromRight { from { transform: translateX(50%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.coluna-resultado.animar-entrada-esquerda { animation: slideAndFadeInFromLeft 0.8s ease-out forwards; }
+.coluna-resultado.animar-entrada-direita { animation: slideAndFadeInFromRight 0.8s ease-out forwards; }
+@keyframes poing-in { 0% { transform: scale(0.3); opacity: 0; } 80% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+.placeholder-grafico-pizza.animar-poing { opacity: 1; animation: poing-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 1s; }
+.scroll-animacao { opacity: 0; transform: translateY(50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+.scroll-animacao.visivel { opacity: 1; transform: translateY(0); }
+#vencedor-container { margin-top: 60px; padding-top: 40px; border-top: 3px solid #0f3460; }
+#vencedor-banner-grande { font-size: 60px; color: #50fa7b; margin-bottom: 30px; }
+#vencedor-imagem { width: 400px; height: 400px; object-fit: cover; border-radius: 50%; border: 8px solid #50fa7b; box-shadow: 0 0 35px #50fa7b; }
+#botao-container { margin-top: 60px; padding-top: 40px; border-top: 3px solid #0f3460; }
+
+.btn-secundario {
+    background-color: #f1c40f; 
+    color: #16213e; 
+    border-color: #16213e;
+    margin-top: 15px;
+}
+.btn-secundario:hover {
+    background-color: #16213e;
+    color: #f1c40f;
+    border-color: #f1c40f;
+}
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 100; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.8); 
+    -webkit-backdrop-filter: blur(5px); 
+    backdrop-filter: blur(5px); 
+}
+.modal-content {
+    background-color: #16213e;
+    margin: 8% auto; 
+    padding: 30px;
+    border: 3px solid #e94560;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 900px;
+    position: relative;
+    color: #e0e0e0;
+    text-align: left;
+    box-shadow: 0 0 30px rgba(227, 20, 102, 0.7);
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #e94560;
+    text-decoration: none;
+}
+
+.modal-secao {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 2px dashed #0f3460;
+}
+.modal-secao:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.modal-secao h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+.modal-secao p {
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+}
+.modal-secao a {
+    color: #f1c40f;
+    text-decoration: none;
+    font-weight: bold;
+}
+.modal-secao a:hover {
+    text-decoration: underline;
+}
+
+#resultados .analise-interativa {
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    gap: 30px; 
+    margin-top: 30px;
+    padding: 20px;
+}
+
+#resultados .dadinho-analise-personagem {
+    flex-shrink: 0; 
+}
+
+#resultados .dadinho-analise-img-grande {
+    width: 250px; 
+    height: auto; 
+    object-fit: contain;
+}
+
+#resultados .card-analise {
+    flex: 1; 
+    max-width: 600px; 
+    background-color: #0f3460;
+    border: 2px solid #e94560; 
+    border-radius: 10px;
+    padding: 20px;
+    text-align: left;
+    box-shadow: 0 0 10px rgba(233, 69, 96, 0.5); 
+}
+
+#resultados #texto-analise {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: scale(1.1) translateX(0) rotate(0deg);
+    }
+    25% {
+        transform: scale(1.1) translateX(-4px) rotate(-5deg);
+    }
+    50% {
+        transform: scale(1.1) translateX(4px) rotate(5deg);
+    }
+    75% {
+        transform: scale(1.1) translateX(-4px) rotate(-5deg);
+    }
+}
+
+@keyframes pop-select {
+    0% {
+        transform: scale(1.0);
+    }
+    50% {
+        transform: scale(1.25);
+    }
+    100% {
+        transform: scale(1.1);
+    }
+}
+#analise-final h2 {
+    margin-top: 80px; 
+}
+.titulo-grafico-pizza {
+    font-family: Arial, sans-serif; 
+    font-size: 16px;
+    font-style: italic;
+    color: #ffffff; 
+    margin-top: 25px; 
+    margin-bottom: 10px; 
+    text-align: center;
+    line-height: 1.4;
+}

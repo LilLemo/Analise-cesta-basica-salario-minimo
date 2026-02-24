@@ -1,0 +1,228 @@
+import pandas as pd
+import json
+import os
+import google.generativeai as genai
+from flask import Flask, request, jsonify, send_from_directory
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from flask_cors import CORS
+from google.api_core import exceptions
+
+# --- CONFIGURAÇÃO INICIAL (AJUSTADA PARA LOCALHOST) ---
+
+load_dotenv() # Certifique-se de ter o arquivo .env com a GEMINI_API_KEY na mesma pasta
+
+# 1. AJUSTE DE CAMINHO: Garante que acha o .db na mesma pasta deste script
+basedir = os.path.abspath(os.path.dirname(__file__))
+database_path = os.path.join(basedir, 'dados_analiticos.db')
+DB_URL = 'sqlite:///' + database_path
+
+print(f"--- MODO LOCAL ---")
+print(f"Lendo banco de dados em: {database_path}")
+
+# Cria o "motor" do banco de dados
+engine = create_engine(DB_URL)
+HORAS_TRABALHO_MES = 220
+
+# Configura a API do Gemini
+try:
+    # DICA: Se não tiver o arquivo .env, pode colar a chave direto aqui pro video:
+    # genai.configure(api_key="SUA_KEY_AQUI")
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+except Exception as e:
+    print(f"AVISO: Não foi possível configurar a API do Gemini. Verifique a chave. Erro: {e}")
+
+app = Flask(__name__, static_folder='.', static_url_path='')
+CORS(app)
+
+# --- FUNÇÃO 1: O CALCULISTA ---
+
+def calcular_metricas(periodo_gov):
+    # Nota: Removi o %(gov_name)s e usei sintaxe padrão SQLalchemy para evitar erros no SQLite
+    sql_query = 'SELECT * FROM "dados_consolidados" WHERE "Governo" = :gov_name'
+    params = {'gov_name': periodo_gov}
+    
+    try:
+        df = pd.read_sql_query(sql_query, engine, params=params)
+    except Exception as e:
+        print(f"Erro ao ler banco de dados: {e}")
+        return None
+
+    if df.empty:
+        return None
+
+    colunas_numericas = ['Salario', 'valor_nominal', 'salario_minimo_necessario']
+    for col in colunas_numericas:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+        else:
+            df[col] = pd.NA
+    df.dropna(subset=['Salario', 'valor_nominal'], inplace=True)
+
+    df['data'] = pd.to_datetime(df['data'])
+    df = df.sort_values(by='data')
+
+    media_salario = df['Salario'].mean()
+    media_cesta = df['valor_nominal'].mean()
+    media_smn = df['salario_minimo_necessario'].mean()
+    
+    smn_multiplicador = media_smn / media_salario if media_salario > 0 and pd.notna(media_smn) else 0
+    
+    percentual_comprometimento = (media_cesta / media_salario) * 100 if media_salario > 0 else 0
+    smn_multiplicador = media_smn / media_salario if media_salario > 0 and pd.notna(media_smn) else 0
+    
+    salario_inicial = df['Salario'].iloc[0]
+    salario_final = df['Salario'].iloc[-1]
+    aumento_percentual_sm = ((salario_final - salario_inicial) / salario_inicial) * 100 if salario_inicial > 0 else 0
+
+    horas_necessarias = (media_cesta / media_salario) * HORAS_TRABALHO_MES if media_salario > 0 else 0
+    
+    df['data_str'] = df['data'].dt.strftime('%Y-%m')
+    dados_grafico_linha = {'labels': df['data_str'].tolist(),'salario': df['Salario'].tolist(),'cesta': df['valor_nominal'].tolist()}
+    dados_pizza = { 'labels': ['Cesta Básica', 'Sobra'], 'valores': [percentual_comprometimento, 100 - percentual_comprometimento] }
+    
+    return {
+        'nome': periodo_gov,
+        'dados_grafico_linha': dados_grafico_linha,
+        'dados_pizza': dados_pizza,
+        'kpi_horas_trabalho': round(horas_necessarias, 2),
+        'kpi_media_sm': f"R$ {media_salario:.2f}",
+        'kpi_media_smn': f"R$ {media_smn:.2f}" if pd.notna(media_smn) else "N/A",
+        'kpi_smn_multiplicador': f"{smn_multiplicador:.2f}x" if smn_multiplicador > 0 else "N/A",
+        'kpi_aumento_percentual_sm': f"{aumento_percentual_sm:.2f}%",
+        'kpi_percentual_comprometimento': f"{percentual_comprometimento:.2f}%"
+    }
+
+# --- FUNÇÃO: O "ESTEPE" ---
+def chamar_deepseek(prompt):
+    print("AVISO: Limite do Gemini atingido. (DeepSeek acionado, mas verifique se a key está configurada)...")
+    # Para o teste local do vídeo, se falhar o Gemini, ele vai cair no texto padrão lá embaixo
+    return None 
+
+# --- FUNÇÃO 2: O CÉREBRO DA APLICAÇÃO ---
+
+@app.route('/api/comparar', methods=['POST'])
+def comparar_governos():
+    dados_requisicao = request.json
+    gov1_nome = dados_requisicao.get('gov1')
+    gov2_nome = dados_requisicao.get('gov2')
+
+    dados_gov1 = calcular_metricas(gov1_nome)
+    dados_gov2 = calcular_metricas(gov2_nome)
+
+    if not dados_gov1 or not dados_gov2:
+        return jsonify({"erro": "Dados para um dos governos não encontrados"}), 404
+
+    aumento_gov1 = float(dados_gov1['kpi_aumento_percentual_sm'][:-1])
+    aumento_gov2 = float(dados_gov2['kpi_aumento_percentual_sm'][:-1])
+    horas_gov1 = dados_gov1['kpi_horas_trabalho']
+    horas_gov2 = dados_gov2['kpi_horas_trabalho']
+    
+    # Tratamento seguro para N/A
+    try:
+        multiplicador_gov1 = float(dados_gov1['kpi_smn_multiplicador'][:-1])
+    except:
+        multiplicador_gov1 = float('inf')
+        
+    try:
+        multiplicador_gov2 = float(dados_gov2['kpi_smn_multiplicador'][:-1])
+    except:
+        multiplicador_gov2 = float('inf')
+
+    comprometimento_gov1 = float(dados_gov1['kpi_percentual_comprometimento'][:-1])
+    comprometimento_gov2 = float(dados_gov2['kpi_percentual_comprometimento'][:-1])
+    
+    vencedor_aumento_sm = dados_gov1['nome'] if aumento_gov1 > aumento_gov2 else dados_gov2['nome']
+    vencedor_horas = dados_gov1['nome'] if horas_gov1 < horas_gov2 else dados_gov2['nome']
+    vencedor_smn = dados_gov1['nome'] if multiplicador_gov1 < multiplicador_gov2 else dados_gov2['nome']
+    vencedor_comprometimento = dados_gov1['nome'] if comprometimento_gov1 < comprometimento_gov2 else dados_gov2['nome']
+    
+    pontos = {dados_gov1['nome']: 0, dados_gov2['nome']: 0}
+    pontos[vencedor_aumento_sm] += 1
+    pontos[vencedor_horas] += 1
+    pontos[vencedor_smn] += 1
+    pontos[vencedor_comprometimento] += 2
+    
+    placar_final = f"Placar Final: {dados_gov1['nome'].upper()} {pontos[dados_gov1['nome']]} x {pontos[dados_gov2['nome']]} {dados_gov2['nome'].upper()}"
+    
+    if pontos[dados_gov1['nome']] > pontos[dados_gov2['nome']]:
+        vencedor_geral_label = f"VENCEDOR: {dados_gov1['nome'].upper()}"
+    elif pontos[dados_gov2['nome']] > pontos[dados_gov1['nome']]:
+        vencedor_geral_label = f"VENCEDOR: {dados_gov2['nome'].upper()}"
+    else:
+        vencedor_geral_label = "EMPATE TÉCNICO"
+
+    prompt = f"""
+      Aja como 'Dadinho', um carismático locutor de um jogo de luta dos anos 80 e analista de dados. Sua tarefa é narrar um "embate econômico" em rounds, com parágrafos muito curtos e diretos (máximo 2 frases por parágrafo).
+
+      **DADOS APURADOS PARA SUA NARRAÇÃO:**
+     - GOVERNO A: {dados_gov1['nome'].upper()}
+     - Comprometimento da Renda: {dados_gov1['kpi_percentual_comprometimento']} 
+     - Aumento do Salário: {dados_gov1['kpi_aumento_percentual_sm']}
+     - Horas de Trabalho p/ Cesta: {dados_gov1['kpi_horas_trabalho']} horas
+     - SM vs. Necessário: {dados_gov1['kpi_smn_multiplicador']}
+
+       - GOVERNO B: {dados_gov2['nome'].upper()}
+     - Comprometimento da Renda: {dados_gov2['kpi_percentual_comprometimento']} 
+     - Aumento do Salário: {dados_gov2['kpi_aumento_percentual_sm']}
+     - Horas de Trabalho p/ Cesta: {dados_gov2['kpi_horas_trabalho']} horas
+     - SM vs. Necessário: {dados_gov2['kpi_smn_multiplicador']}
+
+      **RESULTADO DO JULGAMENTO (JÁ CALCULADO):**
+   
+       - Vencedor do Round 1 ('Aumento de Salário'): {vencedor_aumento_sm.upper()}
+      - Vencedor do Round 2 ('Horas de Trabalho'): {vencedor_horas.upper()}
+      - Vencedor do Round 3 ('Distância do Salário Necessário'): {vencedor_smn.upper()}
+      - Vencedor do Round 4 ('Comprometimento da Renda') - (Peso 2): {vencedor_comprometimento.upper()}
+     - Placar Final: {placar_final}
+      - Vencedor Geral: {vencedor_geral_label}
+
+      **INSTRUÇÕES PARA SUA NARRAÇÃO:**
+      1.  Saudação: Comece com uma única frase de saudação empolgada (ex: "LADIES AND GENTLEMEN! BEM-VINDOS AO COMBATE ECONÔMICO DO SÉCULO!").
+   
+      2.  **Round 1 - Aumento Salarial:** Em um parágrafo curto, anuncie o vencedor do Round 1 ({vencedor_aumento_sm.upper()}), citando os percentuais.
+   
+      3.  **Round 2 - Horas de Trabalho:** Em outro parágrafo curto, anuncie o vencedor do Round 2 ({vencedor_horas.upper()}), comparando as horas.
+   
+      4.  **Round 3 - Distância do Ideal:** Em um parágrafo curto, anuncie o vencedor do Round 3 ({vencedor_smn.upper()}), comparando o multiplicador 'x'.
+   
+       5.  **Round 4 (Peso 2) - Comprometimento da Renda:** Em um parágrafo curto (máximo 2 frases), anuncie o vencedor do Round 4 ({vencedor_comprometimento.upper()}), citando qual governo exigia a *menor* porcentagem do salário. (Destaque que vale 2 pontos e que esse é um "ATAQUE ESPECIAL" ou "GOLPE FINAL" muito forte!)
+   
+      6.  **Veredito Final:** Em um parágrafo final, apresente o placar ({placar_final}) e o vencedor ({vencedor_geral_label}). Cite brevemente um contexto histórico que pode ter impactado o resultado (ex: "uma luta influenciada pela inflação da época", "impacto do Plano Real", "crise internacional", etc.).
+      """
+    
+    texto_analise_ia = None
+    try:
+        print("Chamando Gemini...")
+        model = genai.GenerativeModel('gemini-2.5-flash') # Ou 'gemini-pro' se der erro
+        response = model.generate_content(prompt)
+        texto_analise_ia = response.text
+    except Exception as e:
+        print(f"Erro na IA: {e}")
+        # Fallback silencioso para não parar o video
+        texto_analise_ia = chamar_deepseek(prompt)
+
+    if texto_analise_ia is None:
+        texto_analise_ia = (f"Olá! Aqui é o Dadinho. Meus circuitos estão off, mas o placar é real!\n\n"
+                            f"Vencedor Salário: {vencedor_aumento_sm.upper()}\n"
+                            f"Vencedor Horas: {vencedor_horas.upper()}\n"
+                            f"Vencedor Cesta: {vencedor_comprometimento.upper()}\n\n"
+                            f"{placar_final}")
+
+    resultado_final = { 
+        "governo1": dados_gov1, 
+        "governo2": dados_gov2, 
+        "analise_dadinho": texto_analise_ia,
+        "vencedor": vencedor_geral_label 
+    }
+    return jsonify(resultado_final)
+
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
+# 2. AJUSTE FINAL: Rodar simples no Localhost
+if __name__ == '__main__':
+    print("Iniciando servidor local...")
+    # debug=True permite que o servidor recarregue se vc mudar o código
+    app.run(debug=True)

@@ -1,0 +1,42 @@
+{
+    "governo1": {
+        "nome": "dilma1",
+        "grafico_linha_path": "resultados/grafico_linha_dilma1.png",
+        "dados_pizza": {
+            "labels": [
+                "Cesta Básica",
+                "Sobra do Salário"
+            ],
+            "valores": [
+                48.157111284451375,
+                51.842888715548625
+            ]
+        },
+        "kpi_horas_trabalho": 105.95,
+        "kpi_smn": "Dados Indisponíveis",
+        "salario_inicial": 540.0,
+        "salario_final": 724.0,
+        "crescimento_salario_perc": 34.07,
+        "inflacao_cesta_perc": 35.58
+    },
+    "governo2": {
+        "nome": "temer",
+        "grafico_linha_path": "resultados/grafico_linha_temer.png",
+        "dados_pizza": {
+            "labels": [
+                "Cesta Básica",
+                "Sobra do Salário"
+            ],
+            "valores": [
+                47.83775821433524,
+                52.16224178566476
+            ]
+        },
+        "kpi_horas_trabalho": 105.24,
+        "kpi_smn": "Dados Indisponíveis",
+        "salario_inicial": 880.0,
+        "salario_final": 954.0,
+        "crescimento_salario_perc": 8.41,
+        "inflacao_cesta_perc": 0.52
+    }
+}

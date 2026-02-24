@@ -1,0 +1,42 @@
+{
+    "governo1": {
+        "nome": "lula2",
+        "grafico_linha_path": "resultados/grafico_linha_lula2.png",
+        "dados_pizza": {
+            "labels": [
+                "Cesta Básica",
+                "Sobra do Salário"
+            ],
+            "valores": [
+                51.240772128060264,
+                48.759227871939736
+            ]
+        },
+        "kpi_horas_trabalho": 112.73,
+        "kpi_smn": "Dados Indisponíveis",
+        "salario_inicial": 380.0,
+        "salario_final": 510.0,
+        "crescimento_salario_perc": 34.21,
+        "inflacao_cesta_perc": 43.54
+    },
+    "governo2": {
+        "nome": "bolsonaro",
+        "grafico_linha_path": "resultados/grafico_linha_bolsonaro.png",
+        "dados_pizza": {
+            "labels": [
+                "Cesta Básica",
+                "Sobra do Salário"
+            ],
+            "valores": [
+                56.69399095577526,
+                43.30600904422474
+            ]
+        },
+        "kpi_horas_trabalho": 124.73,
+        "kpi_smn": "Dados Indisponíveis",
+        "salario_inicial": 998.0,
+        "salario_final": 1212.0,
+        "crescimento_salario_perc": 21.44,
+        "inflacao_cesta_perc": 69.21
+    }
+}
