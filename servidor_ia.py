@@ -65,9 +65,7 @@ def calcular_metricas(periodo_gov):
     media_salario = df['Salario'].mean()
     media_cesta = df['valor_nominal'].mean()
     media_smn = df['salario_minimo_necessario'].mean()
-    
-    smn_multiplicador = media_smn / media_salario if media_salario > 0 and pd.notna(media_smn) else 0
-    
+        
     percentual_comprometimento = (media_cesta / media_salario) * 100 if media_salario > 0 else 0
     smn_multiplicador = media_smn / media_salario if media_salario > 0 and pd.notna(media_smn) else 0
     
@@ -225,4 +223,5 @@ def index():
 if __name__ == '__main__':
     print("Iniciando servidor local...")
     # debug=True permite que o servidor recarregue se vc mudar o código
+
     app.run(debug=True)
