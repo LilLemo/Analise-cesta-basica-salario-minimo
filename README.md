@@ -100,4 +100,4 @@ Acesse no seu navegador: `http://localhost:5000`
 ```
 
 ---
-*Desenvolvido por [Seu Nome] - 2024*
+*Desenvolvido por Leonardo Moura Rebouças - 2025*
